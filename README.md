@@ -1,89 +1,278 @@
-# LitePolis-middleware Template
+# :rocket: Build Your Own LitePolis Middleware! :rocket:
 
-This repository serves as a template for creating middleware modules for LitePolis. It provides a basic structure and example code to guide you through the process.
+Welcome, Developer! Ready to extend LitePolis with your own custom functionality? This template is your launchpad for creating powerful middleware modules.
 
-> :warning: Keep the prefix "litepolis-middleware-" and "litepolis_middleware_" in the name of package and directories to ensure the LitePolis package manager will be able to recognize it during deployment.
+> :heavy_exclamation_mark: LitePolis is FastAPI based, so as middleware the FastAPI middleware.
 
-## Getting Started
+## Step 1: :clipboard: Grab the Template
 
-1.  **Clone the Repository:** Start by cloning this repository to your local machine.
+Assume your new project is called "litepolis_middleware_auth"
 
-2.  **Rename the Package:** Update the package name in the following files:
-    * **`setup.py`**: Change `name='litepolis-middleware-template'` to your desired package name (e.g., `litepolis-middleware-auth`). Also, update the `version`, `description`, `author`, and `url` fields accordingly.
-    * **`tests/test_core.py`**: Update the import statements to reflect your new package name. For example, change `from litepolis_middleware_template.core import add_middleware` to `from litepolis_middleware_auth.core import add_middleware`.
-    * Rename the folder `litepolis_middleware_template` to your new package name (e.g., `litepolis_middleware_auth`).
+```bash
+litepolis-cli create middleware LitePolis-middleware-auth
+cd LitePolis-middleware-auth
 
-3.  **Implement Middleware Logic:** Modify the `litepolis_middleware_template/core.py` file (or the renamed equivalent) to implement your middleware logic. This includes defining the middleware functionality. The `DEFAULT_CONFIG` dictionary in `core.py` allows for default configuration settings. Ensure you update the comments in your code to accurately reflect the middleware's functionality, as these will be used for documentation.
-
-4.  **Testing:** The `tests/test_core.py` file contains example tests using Pytest and FastAPI's `TestClient`. Update these tests to cover your middleware's functionality. Ensure your tests correctly use `DEFAULT_CONFIG` where necessary and properly set up the FastAPI test application instance for testing. Ensure the tests run successfully after making changes.
-
-## Key Files and Modifications
-
-* **`setup.py`**: This file contains metadata about your package. **Crucially**, you need to change the `name` field to your package's unique name. Also, update the `version`, `description`, `author`, and `url` fields as needed.
-
-* **`litepolis_middleware_template/core.py`**: This file contains the core logic for your module, including the `add_middleware` function and the `DEFAULT_CONFIG` dictionary. The `DEFAULT_CONFIG` dictionary provides default configuration settings that will be registered with LitePolis. Implement your middleware logic within the `add_middleware` function. **Important:** Update the comments for documentation.
-
-* **`tests/test_core.py`**: This file contains tests for your module. Update the tests to reflect your changes in `core.py`. Thorough testing is essential for ensuring the correctness of your module. Ensure your tests correctly set up the FastAPI test application and utilize `DEFAULT_CONFIG` as needed.
-
-## Important Considerations
-
-* **Documentation:** Well-documented code is crucial for maintainability and collaboration. Ensure your middleware logic in `core.py` has clear and comprehensive comments. These comments will be used to generate documentation for LitePolis.
-
-* **Testing:** Write comprehensive tests to cover all aspects of your middleware module. This will help catch errors early and ensure the stability of your code.
-
-* **Dependencies:** If your module requires external libraries, add them to the `install_requires` list in `setup.py`. Also list FastAPI-specific dependencies in the `litepolis_middleware_template/dependencies.py` file.
-
-* **`DEFAULT_CONFIG` and Middleware Logic:** The `DEFAULT_CONFIG` dictionary defined in `core.py` is crucial. Its contents will be registered with the LitePolis configuration system upon deployment. Ensure it contains appropriate default values for your middleware. FastAPI middleware logic defined in `core.py` is also essential, as LitePolis will use it to integrate your middleware into applications.
-
-## About `dependencies.py`
-
-Contains definitions for FastAPI dependencies (using `fastapi.Depends`) needed by your middleware. Defining them here helps LitePolis manage and potentially override or inject dependencies during deployment.
-
-## About `DEFAULT_CONFIG`
-
-This dictionary, defined in `core.py`, holds default configuration values for your middleware module. These values will be registered with the LitePolis configuration system when the module is deployed. If modified configurations are provided during deployment, they will override these defaults. Settings can be fetched within your code (or other services) using the `get_config(<package-name>, <configuration-key>)` function provided by LitePolis infrastructure, which will return the currently active value.
-
-## Recommended Pattern for Accessing Configuration
-
-To ensure automated tests (Pytest) do not rely on live configuration sources, use the following pattern to fetch configuration values. This pattern checks for environment variables set by Pytest (`PYTEST_CURRENT_TEST` or `PYTEST_VERSION`) to determine the execution context.
-
-```python
-import os
-# Assuming get_config is available for fetching live config
-# from litepolis import get_config
-
-# Define default values suitable for testing environment
-DEFAULT_CONFIG = {
-    "some_api_key": "test_key_123"
-    # Add other necessary default config values here
-}
-
-# Configuration Fetching Logic
-db_url = None
-some_key = None
-
-# Check if running under Pytest
-if ("PYTEST_CURRENT_TEST" not in os.environ and
-    "PYTEST_VERSION" not in os.environ):
-    # NOT running under Pytest: Fetch from live source
-    print("Fetching configuration from live source...") # Optional debug msg
-    # Replace with actual service name and key
-    some_key = get_config("your_middleware_name", "some_api_key")
-else:
-    # Running under Pytest: Use default values
-    print("Running under Pytest. Using default configuration.") # Optional debug msg
-    db_url = DEFAULT_CONFIG["database_url"]
-    some_key = DEFAULT_CONFIG["some_api_key"]
-
-# Use the determined config values (db_url, some_key)
-print(f"Using Database URL: {db_url}")
-print(f"Using API Key: {some_key}")
-
+# or you can also do:
+# git clone https://github.com/NewJerseyStyle/LitePolis-middleware-template
+# mv LitePolis-middleware-template LitePolis-middleware-auth
+# cd LitePolis-middleware-auth
 ```
 
-**Guidance:**
+**What to Change:**
 
-* Apply this pattern for any configuration that differs between test and live environments.
-* Ensure `DEFAULT_CONFIG` is defined with appropriate test values.
-* Remember to `import os`.
-* Use the actual `get_config` function provided by the LitePolis environment when not running tests.
+1.  **`pyproject.toml` - The Control Center:**
+    * Open `pyproject.toml`. This file tells Python how to build and manage your package.
+    * Find the `[project]` section.
+    * **Change `name`**: Replace `"litepolis-middleware-template"` with your unique name, keeping the prefix.
+        ```diff
+        [project]
+        - name = "litepolis-middleware-template"
+        + name = "litepolis-middleware-auth" # <-- CHANGE THIS!
+        version = "0.0.1" # You might want to reset this to 0.0.1 or 0.1.0
+        authors = [
+        -    { name = "Your name" }, # <-- CHANGE THIS!
+        +    { name = "Your Awesome Name", email = "your.email@example.com" },
+        ]
+        - description = "The middleware module for LitePolis" # <-- CHANGE THIS!
+        + description = "Handles authentication and authorization for LitePolis apps."
+        dependencies = [
+            "litepolis",
+        -    "litepolis-database-example", # <-- Remove or change dependencies as needed
+        +    "passlib[bcrypt]",         # Example
+        ]
+        ```
+    * Update `authors`, `description`, and `dependencies` to match *your* project.
+    * Check the `[project.urls]` section and update the `Homepage` URL if you host your code elsewhere.
+
+2.  **The Main Code Folder:**
+    * Rename the folder `litepolis_middleware_template` to match your package name, but using underscores (`_`) instead of hyphens (`-`).
+    * Example: `litepolis_middleware_template` becomes `litepolis_middleware_auth`
+
+3.  **Test File Imports:**
+    * Open `tests/test_core.py`.
+    * Find the import statement at the top. It needs to reflect your new folder name.
+    * Example:
+        ```diff
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        - from litepolis_middleware_template.core import add_middleware, DEFAULT_CONFIG
+        + from litepolis_middleware_auth.core import add_middleware, DEFAULT_CONFIG # <-- CHANGE THIS!
+
+        # ... rest of the test file
+        ```
+
+> **:warning: Super Important Naming Convention:**
+> * Your package name in `pyproject.toml` **MUST** start with `litepolis-middleware-`.
+> * Your main code directory **MUST** start with `litepolis_middleware_`.
+> * Failure to follow this will prevent LitePolis from finding and loading your middleware!
+
+## Step 2: :sparkles: Implement Your Middleware Magic!
+
+Now for the fun part – writing the code that *does* something!
+
+1.  **Navigate to Your Core Logic:**
+    * Open the file inside your renamed code folder (e.g., `litepolis_middleware_auth/core.py`).
+
+2.  **Find `add_middleware`:**
+    * This function is the entry point LitePolis calls. It receives the FastAPI `app` instance and the configuration specific to your middleware.
+    * **This is where you'll add your FastAPI middleware.** You might define a middleware class or function *within* this file (or import it from another file in your package) and then add it to the app using `app.add_middleware(...)`.
+
+    ```python
+    # Example: Inside litepolis_middleware_auth/core.py
+    from fastapi import FastAPI, Request, Depends
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.responses import Response
+    from litepolis import get_config
+    import time # Just an example
+
+    # Your configuration defaults (more on this later!)
+    DEFAULT_CONFIG = {
+        "enabled": True,
+        "some_api_key": "replace_this_default_key",
+    }
+
+    # --- YOUR MIDDLEWARE LOGIC GOES HERE ---
+    class MyCustomMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            start_time = time.time()
+            # Do something before the request is processed (e.g., check auth header)
+            print(f"Middleware: Processing request {request.url.path}")
+
+            response = await call_next(request) # Process the request
+
+            # Do something after the request is processed
+            process_time = time.time() - start_time
+            response.headers["X-Process-Time"] = str(process_time)
+            print(f"Middleware: Finished processing in {process_time:.4f} secs")
+            return response
+
+    # --- / YOUR MIDDLEWARE LOGIC ---
+
+
+    def add_middleware(app: FastAPI):
+        """
+        Adds the custom middleware to the FastAPI application.
+        Update this docstring to explain YOUR middleware!
+        """
+        # Use the provided config, falling back to defaults if necessary
+        is_enabled = DEFAULT_CONFIG["enabled"]
+        try:
+            is_enabled = get_config("litepolis_middleware_auth", "enabled")
+        except:
+            pass
+
+        if is_enabled:
+            print(f"Adding MyCustomMiddleware (config: {config})") # Good for debugging
+            # *** THIS IS WHERE YOU ADD YOUR MIDDLEWARE ***
+            app.add_middleware(MyCustomMiddleware)
+            # You might pass config values to your middleware's __init__ if needed
+            # app.add_middleware(MyOtherMiddleware, api_key=config.get("some_api_key"))
+        else:
+            print("MyCustomMiddleware is disabled via configuration.")
+
+    ```
+
+3.  **Update Documentation:**
+    * **Crucially, update the docstrings and comments** in `core.py` (especially for `add_middleware` and within your middleware logic). LitePolis uses these comments to generate help and documentation! Explain what *your* middleware does.
+
+## Step 3: :gear: Configure Your Middleware
+
+Your middleware might need settings (API keys, feature flags, database URLs, etc.).
+
+1.  **Default Settings (`DEFAULT_CONFIG`):**
+    * Locate the `DEFAULT_CONFIG` dictionary near the top of your `core.py` (e.g., `litepolis_middleware_auth/core.py`).
+    * **Modify this dictionary to hold the *default* values for your middleware's configuration.** These are the settings LitePolis will register if no specific overrides are provided during deployment.
+
+    ```python
+    # Example: Inside litepolis_middleware_auth/core.py
+    DEFAULT_CONFIG = {
+        "enabled": True, # Should the middleware run?
+        "auth_provider_url": "https://default.auth.example.com",
+        "cache_ttl_seconds": 300,
+        # Add YOUR default settings here
+    }
+    ```
+
+2.  **External Dependencies:**
+    * If your middleware needs other Python packages (like `requests`, `python-jose`, `passlib`, etc.), **add them to the `dependencies` list** under the `[project]` section in your `pyproject.toml` file.
+
+3.  **Accessing Configuration Safely (Important!):**
+    * LitePolis provides a way to get the *current* configuration values (defaults potentially overridden at deployment). However, you need a way to run tests *without* relying on a live LitePolis configuration system.
+    * **Use this pattern** inside your middleware code (or related functions) whenever you need to fetch a configuration value:
+
+    ```python
+    # Inside your middleware code (e.g., core.py or another module)
+    import os
+    # from litepolis import get_config # Import this in a real LitePolis env
+
+    # Your default config defined earlier in core.py
+    # from .core import DEFAULT_CONFIG
+
+    # --- Configuration Fetching Logic ---
+    auth_url = None
+    is_enabled = None
+
+    # Check if running under Pytest
+    if ("PYTEST_CURRENT_TEST" not in os.environ and
+        "PYTEST_VERSION" not in os.environ):
+        # NOT running under Pytest: Fetch from live LitePolis config source
+        print("Fetching configuration from live source...") # Optional debug msg
+        # Replace 'litepolis-middleware-auth' with YOUR package name from pyproject.toml
+        # Replace 'auth_provider_url' with YOUR config key
+        auth_url = get_config("litepolis-middleware-auth", "auth_provider_url")
+        is_enabled = get_config("litepolis-middleware-auth", "enabled")
+    else:
+        # Running under Pytest: Use default values from DEFAULT_CONFIG
+        print("Running under Pytest. Using default configuration.") # Optional debug msg
+        auth_url = DEFAULT_CONFIG.get("auth_provider_url") # Use .get() for safety
+        is_enabled = DEFAULT_CONFIG.get("enabled", True) # Can provide default here too
+
+    # Now use the determined config values
+    print(f"Using Auth URL: {auth_url}")
+    print(f"Middleware Enabled: {is_enabled}")
+    # --- / Configuration Fetching Logic ---
+    ```
+
+## Step 4: :test_tube: Test Your Creation!
+
+Good middleware needs good tests!
+
+1.  **Find the Test File:**
+    * Open `tests/test_core.py`.
+
+2.  **Understand the Setup:**
+    * It uses `pytest` and FastAPI's `TestClient`.
+    * It typically creates a small FastAPI app instance *for testing*, applies your middleware using `add_middleware`, and then makes fake requests to it using `TestClient`.
+
+3.  **Write Your Tests:**
+    * **Adapt the existing tests** to match *your* middleware's behavior.
+    * Add **new tests** to cover different scenarios:
+        * Does it work when enabled?
+        * Does it do nothing when disabled (via `DEFAULT_CONFIG` or mocked config)?
+        * Does it handle edge cases correctly?
+        * If it modifies requests or responses, assert those changes.
+    * Ensure your tests correctly use or mock the `DEFAULT_CONFIG` values.
+
+    ```python
+    # Example snippet from tests/test_core.py (adapt it!)
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    # Make sure this uses YOUR renamed package!
+    from litepolis_middleware_auth.core import add_middleware, DEFAULT_CONFIG
+
+    def create_test_app(**config_overrides):
+        app = FastAPI()
+        # Apply potential overrides to default config for testing
+        test_config = {**DEFAULT_CONFIG, **config_overrides}
+        add_middleware(app, **test_config)
+
+        @app.get("/test_route")
+        async def read_main():
+            return {"msg": "Hello World"}
+        return app
+
+    def test_middleware_adds_header_when_enabled():
+        # Test with default config (assuming it's enabled by default)
+        app = create_test_app()
+        client = TestClient(app)
+        response = client.get("/test_route")
+        assert response.status_code == 200
+        # Example: Assert your middleware did something
+        assert "X-Process-Time" in response.headers
+
+    def test_middleware_does_not_run_when_disabled():
+        # Test explicitly disabling the middleware
+        app = create_test_app(enabled=False)
+        client = TestClient(app)
+        response = client.get("/test_route")
+        assert response.status_code == 200
+        # Example: Assert your middleware DID NOT do something
+        assert "X-Process-Time" not in response.headers
+
+    # --- ADD MORE TESTS FOR YOUR SPECIFIC LOGIC ---
+    ```
+
+4.  **Run Your Tests:**
+    * From your project's root directory, run `pytest`. Make sure they pass!
+
+## :checkered_flag: You're (Almost) Done!
+
+You've now:
+
+1.  Cloned the template.
+2.  Renamed everything to make it uniquely yours.
+3.  Implemented your core middleware logic in `core.py`.
+4.  Set up default configuration in `DEFAULT_CONFIG`.
+5.  Added necessary dependencies in `pyproject.toml`.
+6.  Written tests to ensure it works!
+
+**What's Next?**
+
+When you deploy this middleware within the LitePolis ecosystem, LitePolis will:
+
+* Recognize your package because of the `litepolis-middleware-` prefix.
+* Read the configuration (`DEFAULT_CONFIG` and any deployment overrides).
+* Call your `add_middleware` function to integrate it into the target FastAPI application.
+* Use your docstrings for help and documentation.
+
+**Happy Building!** We can't wait to see what amazing middleware you create for LitePolis!
